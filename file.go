@@ -1,6 +1,7 @@
 package go_logger
 
 import (
+	"compress/gzip"
 	"errors"
 	"github.com/phachon/go-logger/utils"
 	"os"
@@ -303,6 +304,42 @@ func (fw *FileWriter) writeByConfig(config *FileConfig, loggerMsg *loggerMessage
 	return nil
 }
 
+// compress the log file
+func compressFile(filename string) error {
+	// Open the file to be compressed
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Create a compressed file
+	compressedFilename := filename + ".gz"
+	compressedFile, err := os.Create(compressedFilename)
+	if err != nil {
+		return err
+	}
+	defer compressedFile.Close()
+
+	// Create a gzip writer
+	gzipWriter := gzip.NewWriter(compressedFile)
+	defer gzipWriter.Close()
+
+	// Copy the content of the original file to the compressed file
+	_, err = io.Copy(gzipWriter, file)
+	if err != nil {
+		return err
+	}
+
+	// Remove the original uncompressed file
+	err = os.Remove(filename)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 //slice file by date (y, m, d, h, i, s), rename file is file_time.log and recreate file
 func (fw *FileWriter) sliceByDate(dataSlice string) error {
 
@@ -341,6 +378,10 @@ func (fw *FileWriter) sliceByDate(dataSlice string) error {
 		if err != nil {
 			return err
 		}
+		err = compressFile(oldFilename)
+		if err != nil {
+			return err
+		}
 		err = fw.initFile()
 		if err != nil {
 			return err
@@ -366,6 +407,10 @@ func (fw *FileWriter) sliceByFileLines(maxLine int64) error {
 		if err != nil {
 			return err
 		}
+		err = compressFile(oldFilename)
+		if err != nil {
+			return err
+		}
 		err = fw.initFile()
 		if err != nil {
 			return err
@@ -388,6 +433,10 @@ func (fw *FileWriter) sliceByFileSize(maxSize int64) error {
 		timeFlag := time.Now().Format("2006-01-02-15.04.05.9999")
 		oldFilename := strings.Replace(filename, filenameSuffix, "", 1) + "." + timeFlag + filenameSuffix
 		err := os.Rename(filename, oldFilename)
+		if err != nil {
+			return err
+		}
+		err = compressFile(oldFilename)
 		if err != nil {
 			return err
 		}
