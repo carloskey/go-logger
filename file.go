@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"io"
 )
 
 const FILE_ADAPTER_NAME = "file"
