@@ -15,6 +15,8 @@ import (
 
 const FILE_ADAPTER_NAME = "file"
 
+var DoCompressFile = true
+
 const (
 	FILE_SLICE_DATE_NULL  = ""
 	FILE_SLICE_DATE_YEAR  = "y"
@@ -307,6 +309,9 @@ func (fw *FileWriter) writeByConfig(config *FileConfig, loggerMsg *loggerMessage
 
 // compress the log file
 func compressFile(filename string) error {
+	if !DoCompressFile {
+		return nil
+	}
 	// Open the file to be compressed
 	file, err := os.Open(filename)
 	if err != nil {
