@@ -13,9 +13,9 @@ import (
 	"io"
 )
 
-const FILE_ADAPTER_NAME = "file"
-
 var DoCompressFile = true
+
+const FILE_ADAPTER_NAME = "file"
 
 const (
 	FILE_SLICE_DATE_NULL  = ""
